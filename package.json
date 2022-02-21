@@ -1,0 +1,14 @@
+{
+  "dependencies": {
+    "express": "^4.17.3",
+    "joi": "^17.6.0",
+    "jsonwebtoken": "^8.5.1",
+    "luxon": "^2.3.0",
+    "mysql2": "^2.3.3",
+    "sequelize": "^6.16.2",
+    "socket.io": "^4.4.1"
+  },
+  "devDependencies": {
+    "sequelize-cli": "^6.4.1"
+  }
+}
