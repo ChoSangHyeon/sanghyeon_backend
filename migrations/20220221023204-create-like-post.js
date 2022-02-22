@@ -8,10 +8,10 @@ module.exports = {
                 primaryKey: true,
                 type: Sequelize.INTEGER,
             },
-            likeUserId: {
+            userId: {
                 type: Sequelize.STRING,
             },
-            likePostId: {
+            postId: {
                 type: Sequelize.STRING,
             },
             createdAt: {

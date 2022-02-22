@@ -5,7 +5,7 @@ const { User, Post, LikePost, Comment } = require('./models');
 const jwt = require('jsonwebtoken');
 const authMiddleware = require('./middlewares/auth_middleware');
 const Http = require('http');
-const SocketIo = require('socket.io');
+// const SocketIo = require('socket.io');
 const { DateTime } = require('luxon');
 const cors = require('cors');
 const readAuth_middleware = require('./middlewares/readAuth_middleware');
@@ -13,7 +13,7 @@ const crypto = require('crypto');
 
 const app = express();
 const http = Http.createServer(app);
-const io = SocketIo(http);
+// const io = SocketIo(http);
 const router = express.Router();
 
 async function islike(postId, userId) {
@@ -21,45 +21,40 @@ async function islike(postId, userId) {
         return false;
     }
     const result = (await LikePost.findOne({
-        where: { likePostId: postId, likeUserId: userId },
+        where: { postId: postId, userId: userId },
     }))
         ? true
         : false;
     return result;
 }
-io.on('connection', (Socket) => {
-    console.log('a user connected');
-
-    Socket.on('Like', (data) => {
-        const payload = {
-            nickname: data.nickname,
-            userId: data.userId,
-            postId: data.postId,
-            date: DateTime.now().setZone('Asia/seoul').toISO(),
-        };
-        Post.findOne({ where: { postId: data.postId } }).then((post) => {
-            io.to(`${post.userId}`).emit('Like_Post', payload);
-        });
-
-        // Socket.broadcast.emit("BUY_GOODS",payload);
-    });
-    Socket.on('Comment', (data) => {
-        const payload = {
-            nickname: data.nickname,
-            userId: data.userId,
-            postId: data.postId,
-            date: DateTime.now().setZone('Asia/seoul').toISO(),
-        };
-        Post.findOne({ where: { postId: data.postId } }).then((post) => {
-            io.to(`${post.userId}`).emit('Comment_Post', payload);
-        });
-
-        // Socket.broadcast.emit("BUY_GOODS",payload);
-    });
-    Socket.on('disconnect', () => {
-        console.log('연결이 끊겼습니다.');
-    });
-});
+// io.on('connection', (Socket) => {
+//     console.log('a user connected');
+//     Socket.on('Like', (data) => {
+//         const payload = {
+//             nickname: data.nickname,
+//             userId: data.userId,
+//             postId: data.postId,
+//             date: DateTime.now().setZone('Asia/seoul').toISO(),
+//         };
+//         Post.findOne({ where: { postId: data.postId } }).then((post) => {
+//             io.to(`${post.userId}`).emit('Like_Post', payload);
+//         });
+//     });
+//     Socket.on('Comment', (data) => {
+//         const payload = {
+//             nickname: data.nickname,
+//             userId: data.userId,
+//             postId: data.postId,
+//             date: DateTime.now().setZone('Asia/seoul').toISO(),
+//         };
+//         Post.findOne({ where: { postId: data.postId } }).then((post) => {
+//             io.to(`${post.userId}`).emit('Comment_Post', payload);
+//         });
+//     });
+//     Socket.on('disconnect', () => {
+//         console.log('연결이 끊겼습니다.');
+//     });
+// });
 
 const postUsersSchema = Joi.object({
     nickname: Joi.string().min(3).alphanum().required(),
@@ -67,7 +62,9 @@ const postUsersSchema = Joi.object({
     password: Joi.string().min(4).required(),
     passwordCheck: Joi.string().required(),
 });
+//회원가입 규정
 
+//회원가입
 router.post('/users/signup', async (req, res) => {
     console.log(req.body);
     try {
@@ -109,7 +106,9 @@ const postAuthSchema = Joi.object({
     userId: Joi.string().required(),
     password: Joi.string().required(),
 });
+//로그인 규정
 
+//로그인
 router.post('/users/signin', async (req, res) => {
     try {
         const { userId, password } = await postAuthSchema.validateAsync(
@@ -141,10 +140,16 @@ router.post('/users/signin', async (req, res) => {
     }
 });
 
+//로그인 검사
 router.get('/users/me', authMiddleware, async (req, res) => {
-    res.send({ user: res.locals.user });
+    try {
+        res.send({ user: res.locals.user, message: '사용자인증완료' });
+    } catch (err) {
+        res.status(400).send({ message: '사용자인증 실패' });
+    }
 });
 
+//게시글 조회
 const likeCnt = {};
 router.get('/posts', readAuth_middleware, async (req, res) => {
     try {
@@ -184,6 +189,7 @@ router.get('/posts', readAuth_middleware, async (req, res) => {
     }
 });
 
+//게시글 작성
 router.post('/posts', authMiddleware, async (req, res) => {
     try {
         const { userId } = res.locals.user;
@@ -208,6 +214,7 @@ router.post('/posts', authMiddleware, async (req, res) => {
     }
 });
 
+//지정 게시글조회
 router.get('/posts/:postId', readAuth_middleware, async (req, res) => {
     try {
         let userId = null;
@@ -215,28 +222,29 @@ router.get('/posts/:postId', readAuth_middleware, async (req, res) => {
             userId = res.locals.user;
         }
         const { postId } = req.params;
-        const post = await Post.findOne({
+        const posts = await Post.findOne({
             where: { postId },
         });
         const tempPost = await LikePost.count({
             where: { likePostId: postId },
         });
 
-        const Posts = {
-            writer: post.userId,
-            date: post.date,
-            images: post.imagePath,
-            desc: post.desc,
+        const Post = {
+            writer: posts.userId,
+            date: posts.date,
+            images: posts.imagePath,
+            desc: posts.desc,
             likeCount: tempPost,
-            // isLiked: await islike(postId, userId),
+            isLiked: islike(postId, userId),
         };
-        res.send({ Posts, message: '게시글 조회 성공' });
+        res.send({ Post, message: '게시글 조회 성공' });
     } catch (err) {
         console.log(err);
         res.status(400).send({ message: '게시글 조회 실패' });
     }
 });
 
+//게시글 삭제
 router.delete('/posts/:postId', authMiddleware, async (req, res) => {
     try {
         const { userId } = res.locals.user;
@@ -266,6 +274,7 @@ router.delete('/posts/:postId', authMiddleware, async (req, res) => {
     }
 });
 
+//게시글 수정
 router.put('/posts/:postId', authMiddleware, async (req, res) => {
     try {
         const { userId } = res.locals.user;
@@ -296,6 +305,7 @@ router.put('/posts/:postId', authMiddleware, async (req, res) => {
     }
 });
 
+//지정게시글 댓글 조회
 router.get('/posts/:postId/comments', async (req, res) => {
     try {
         const { postId } = req.params;
@@ -309,6 +319,7 @@ router.get('/posts/:postId/comments', async (req, res) => {
     }
 });
 
+//댓글 작성
 router.post('/posts/:postId/comment', authMiddleware, async (req, res) => {
     try {
         const { userId } = res.locals.user;
@@ -333,6 +344,7 @@ router.post('/posts/:postId/comment', authMiddleware, async (req, res) => {
     }
 });
 
+//댓글 수정
 router.put(
     '/posts/:postId/comment/:commentId',
     authMiddleware,
@@ -369,6 +381,7 @@ router.put(
     }
 );
 
+//댓글 삭제
 router.delete(
     '/posts/:postId/comment/:commentId',
     authMiddleware,
@@ -390,6 +403,7 @@ router.delete(
     }
 );
 
+//좋아요
 router.get('/posts/:postId/like', authMiddleware, async (req, res) => {
     const { userId } = res.locals.user;
     const { postId } = req.params;
@@ -404,6 +418,7 @@ router.get('/posts/:postId/like', authMiddleware, async (req, res) => {
         res.send({ message: '좋아요 성공' });
     }
 });
+
 app.use(express.json());
 app.use(cors());
 app.use('/api', express.urlencoded({ extended: false }), router);
