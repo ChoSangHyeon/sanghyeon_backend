@@ -7,7 +7,7 @@ module.exports = (req, res, next) => {
 
     if (!authToken || authType !== 'Bearer') {
         res.locals.User = null;
-        next();
+        return;
     }
 
     try {
@@ -18,6 +18,5 @@ module.exports = (req, res, next) => {
         });
     } catch (err) {
         res.locals.User = null;
-        next();
     }
 };

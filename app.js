@@ -16,12 +16,12 @@ const http = Http.createServer(app);
 const io = SocketIo(http);
 const router = express.Router();
 
-async function islike(postid, userId) {
+async function islike(postId, userId) {
     if (!userId) {
         return false;
     }
     const result = (await LikePost.findOne({
-        where: { likePostId: postid, likeUserId: userId },
+        where: { likePostId: postId, likeUserId: userId },
     }))
         ? true
         : false;
@@ -37,7 +37,23 @@ io.on('connection', (Socket) => {
             postId: data.postId,
             date: DateTime.now().setZone('Asia/seoul').toISO(),
         };
-        io.to().emit('Like_Post', payload);
+        Post.findOne({ where: { postId: data.postId } }).then((post) => {
+            io.to(`${post.userId}`).emit('Like_Post', payload);
+        });
+
+        // Socket.broadcast.emit("BUY_GOODS",payload);
+    });
+    Socket.on('Comment', (data) => {
+        const payload = {
+            nickname: data.nickname,
+            userId: data.userId,
+            postId: data.postId,
+            date: DateTime.now().setZone('Asia/seoul').toISO(),
+        };
+        Post.findOne({ where: { postId: data.postId } }).then((post) => {
+            io.to(`${post.userId}`).emit('Comment_Post', payload);
+        });
+
         // Socket.broadcast.emit("BUY_GOODS",payload);
     });
     Socket.on('disconnect', () => {
@@ -146,15 +162,21 @@ router.get('/posts', readAuth_middleware, async (req, res) => {
                 where: { likePostId: ID },
             });
         }
-        res.send({
-            posts: post.map((temp) => ({
+        const tempPost = post.map(async (temp) => {
+            // const likefake = await islike(temp.postId, userId);
+            return {
                 writer: temp.postId,
                 userId: temp.userId,
                 images: temp.imagePath,
                 desc: temp.desc,
                 likeCount: likeCnt[temp.postId],
                 isLiked: islike(temp.postId, userId),
-            })),
+            };
+        });
+        const result = await Promise.all(tempPost);
+        console.log(result);
+        res.send({
+            posts: result,
         });
     } catch (err) {
         console.log(err);
@@ -199,14 +221,14 @@ router.get('/posts/:postId', readAuth_middleware, async (req, res) => {
         const tempPost = await LikePost.count({
             where: { likePostId: postId },
         });
-        const youLikePost = await islike(postId, userId);
+
         const Posts = {
             writer: post.userId,
             date: post.date,
             images: post.imagePath,
             desc: post.desc,
             likeCount: tempPost,
-            isLiked: youLikePost,
+            // isLiked: await islike(postId, userId),
         };
         res.send({ Posts, message: '게시글 조회 성공' });
     } catch (err) {
@@ -232,7 +254,7 @@ router.delete('/posts/:postId', authMiddleware, async (req, res) => {
             where: { likePostId: postId },
         });
 
-        if (existPost.userId === userId && existsPost) {
+        if (existPost.userId === userId && existPost) {
             await existPost.destroy();
             await existComment.destroy();
             await existLike.destroy();
@@ -353,7 +375,7 @@ router.delete(
     async (req, res) => {
         try {
             const { userId } = res.locals.user;
-            const { postId, commentId } = req.params;
+            const { commentId } = req.params;
             const existComment = await Comment.findOne({
                 where: { commentId },
             });
