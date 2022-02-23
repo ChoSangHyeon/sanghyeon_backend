@@ -4,9 +4,9 @@ const { User } = require('../models');
 module.exports = (req, res, next) => {
     const { authorization } = req.headers;
     const [authType, authToken] = (authorization || '').split(' ');
-
     if (!authToken || authType !== 'Bearer') {
         res.locals.User = null;
+        next();
         return;
     }
 
@@ -18,5 +18,6 @@ module.exports = (req, res, next) => {
         });
     } catch (err) {
         res.locals.User = null;
+        next();
     }
 };
