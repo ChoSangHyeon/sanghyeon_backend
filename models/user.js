@@ -8,15 +8,15 @@ module.exports = (sequelize, DataTypes) => {
          * The `models/index` file will call this method automatically.
          */
         static associate(models) {
-            User.hasMany(models.Post, {
-                onDelete: 'cadcade',
-            });
-            User.hasMany(models.Comment, {
-                onDelete: 'cadcade',
-            });
-            User.hasMany(models.LikePost, {
-                onDelete: 'cadcade',
-            });
+            // User.hasMany(models.Post, {
+            //     onDelete: 'cadcade',
+            // });
+            // User.hasMany(models.Comment, {
+            //     onDelete: 'cadcade',
+            // });
+            // User.hasMany(models.LikePost, {
+            //     onDelete: 'cadcade',
+            // });
         }
     }
     User.init(

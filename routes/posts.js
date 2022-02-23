@@ -21,7 +21,7 @@ router.get('/posts', readAuth_middleware, async (req, res) => {
         for (const ID of postId) {
             isLike[ID] = await LikePost.findAll({
                 where: { postId: ID },
-                attributes: ['userId'],
+                // attributes: ['userId'],
             });
         }
         const tempPost = post.map(async (temp) => {
@@ -92,7 +92,7 @@ router.get('/posts/:postId', readAuth_middleware, async (req, res) => {
         });
         const tempPost = await LikePost.findAll({
             where: { postId },
-            attributes: ['userId'],
+            // attributes: ['userId'],
         });
         let likefake = false;
         if (userId) {
@@ -186,6 +186,13 @@ router.get('/posts/:postId/comments', async (req, res) => {
         const { postId } = req.params;
         const comments = await Comment.findAll({
             where: { postId },
+            // attributes: [
+            //     'userId',
+            //     'date',
+            //     'postId',
+            //     'commentText',
+            //     'commentId',
+            // ],
         });
         res.send({ comments, message: '댓글 조회 성공' });
     } catch (err) {
