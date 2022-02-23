@@ -21,7 +21,7 @@ app.get('/', (req, res) => {
     res.send('this is root page');
 });
 
-http.listen(8080, () => {
+http.listen(3000, () => {
     console.log('서버가 켜졌어요!');
 });
 
