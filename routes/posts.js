@@ -36,8 +36,8 @@ router.get('/posts', readAuth_middleware, async (req, res) => {
                 }
             }
             return {
-                writer: temp.postId,
-                userId: temp.userId,
+                writer: temp.userId,
+                postId: temp.postId,
                 images: temp.imagePath,
                 desc: temp.desc,
                 likeCount: isLike[temp.postId].length,
@@ -129,18 +129,10 @@ router.delete('/posts/:postId', authMiddleware, async (req, res) => {
             where: { postId },
         });
 
-        const existComment = await Comment.findAll({
-            where: { postId },
-        });
-
-        const existLike = await LikePost.findAll({
-            where: { postId },
-        });
-
         if (existPost.userId === userId && existPost) {
+            await Comment.destroy({ where: { postId } });
+            await LikePost.destroy({ where: { postId } });
             await existPost.destroy();
-            await existComment.destroy();
-            await existLike.destroy();
         }
         res.send({ message: '게시글 삭제 성공' });
     } catch (err) {
