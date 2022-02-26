@@ -5,7 +5,7 @@ module.exports = (req, res, next) => {
     const { authorization } = req.headers;
     const [authType, authToken] = (authorization || '').split(' ');
     if (!authToken || authType !== 'Bearer') {
-        res.locals.User = null;
+        res.locals.user = null;
         next();
         return;
     }
@@ -17,7 +17,7 @@ module.exports = (req, res, next) => {
             next();
         });
     } catch (err) {
-        res.locals.User = null;
+        res.locals.user = null;
         next();
     }
 };

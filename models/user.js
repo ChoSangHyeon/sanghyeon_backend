@@ -8,15 +8,21 @@ module.exports = (sequelize, DataTypes) => {
          * The `models/index` file will call this method automatically.
          */
         static associate(models) {
-            // User.hasMany(models.Post, {
-            //     onDelete: 'cadcade',
-            // });
-            // User.hasMany(models.Comment, {
-            //     onDelete: 'cadcade',
-            // });
-            // User.hasMany(models.LikePost, {
-            //     onDelete: 'cadcade',
-            // });
+            User.hasMany(models.Post, {
+                sourceKey: 'userId',
+                foreignKey: 'userId',
+                onDelete: 'cadcade',
+            });
+            User.hasMany(models.Comment, {
+                sourceKey: 'userId',
+                foreignKey: 'userId',
+                onDelete: 'cadcade',
+            });
+            User.hasMany(models.LikePost, {
+                sourceKey: 'userId',
+                foreignKey: 'userId',
+                onDelete: 'cadcade',
+            });
         }
     }
     User.init(
@@ -35,6 +41,8 @@ module.exports = (sequelize, DataTypes) => {
         {
             sequelize,
             modelName: 'User',
+            charset: 'utf8mb4',
+            collate: 'utf8_generak_Ci',
         }
     );
     return User;

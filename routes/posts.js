@@ -10,13 +10,31 @@ const router = express.Router();
 const isLike = {};
 router.get('/posts', readAuth_middleware, async (req, res) => {
     try {
-        let userId = null;
-        if (res.locals.user) {
-            userId = res.locals.user;
-        }
+        const userId = res.locals.user;
+
         const post = await Post.findAll({
             order: [['date', 'DESC']],
         });
+        // const post2 = await Post.findAll({
+        //     include: [
+        //         {
+        //             model: User,
+        //             require: false,
+        //             attributes: ['userId', 'nickname'],
+        //         },
+        //         {
+        //             model: LikePost,
+        //             required: false,
+        //             attributes: ['userId', 'postId'],
+        //         },
+        //     ],
+        //     order: [['date', 'DESC']],
+        // });
+        // const post3 = post2.map((hi) => {
+        //     console.log(hi['User']['userId']);
+        //     return hi;
+        // });
+
         const postId = post.map((temp) => temp.postId);
         for (const ID of postId) {
             isLike[ID] = await LikePost.findAll({
@@ -82,10 +100,8 @@ router.post('/posts', authMiddleware, async (req, res) => {
 //지정 게시글조회
 router.get('/posts/:postId', readAuth_middleware, async (req, res) => {
     try {
-        let userId = null;
-        if (res.locals.user) {
-            userId = res.locals.user;
-        }
+        const userId = res.locals.user;
+
         const { postId } = req.params;
         const posts = await Post.findOne({
             where: { postId },

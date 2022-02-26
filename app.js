@@ -21,9 +21,11 @@ app.get('/', (req, res) => {
     res.send('this is root page');
 });
 
-http.listen(3000, () => {
-    console.log('서버가 켜졌어요!');
-});
+module.exports = http;
+
+// http.listen(3000, () => {
+//     console.log('서버가 켜졌어요!');
+// });
 
 // const SocketIo = require('socket.io');
 // const io = SocketIo(http);
