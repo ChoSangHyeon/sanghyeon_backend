@@ -32,8 +32,6 @@ module.exports = (sequelize, DataTypes) => {
         {
             sequelize,
             modelName: 'Comment',
-            charset: 'utf8mb4',
-            collate: 'utf8_generak_Ci',
         }
     );
     return Comment;

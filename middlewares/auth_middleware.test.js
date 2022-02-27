@@ -44,3 +44,24 @@ test('변조된 토큰으로 요청한 경우 로그인 후 사용하세요 라�
         errorMessage: '로그인 후 이용 가능한 기능입니다.',
     });
 });
+test('토큰이없이 요청한 경우 로그인 후 사용하세요 라는 에러 메세지가 뜬다.', () => {
+    const mockedSend = jest.fn();
+
+    auth_middleware(
+        {
+            headers: {
+                authorization: '',
+            },
+        },
+        {
+            status: () => ({
+                send: mockedSend,
+            }),
+            locals: {},
+        }
+    );
+
+    expect(mockedSend).toHaveBeenCalledWith({
+        errorMessage: '로그인 후 이용 가능한 기능입니다.',
+    });
+});

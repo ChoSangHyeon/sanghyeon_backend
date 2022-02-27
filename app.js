@@ -5,7 +5,6 @@ const cors = require('cors');
 const Http = require('http');
 const app = express();
 const http = Http.createServer(app);
-
 const router = express.Router();
 
 app.use(express.json());

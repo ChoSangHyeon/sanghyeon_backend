@@ -38,8 +38,6 @@ module.exports = (sequelize, DataTypes) => {
         {
             sequelize,
             modelName: 'Post',
-            charset: 'utf8mb4',
-            collate: 'utf8_generak_Ci',
         }
     );
     return Post;
