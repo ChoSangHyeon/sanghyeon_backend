@@ -14,7 +14,8 @@ app.use('/api', express.urlencoded({ extended: false }), router);
 const postRouter = require('./routes/posts.js');
 const usersRouter = require('./routes/users.js');
 
-app.use('/api', [postRouter, usersRouter]);
+app.use('/api/posts', [postRouter]);
+app.use('/api/users', [usersRouter]);
 
 app.get('/', (req, res) => {
     res.send('this is root page');
