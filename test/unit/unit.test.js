@@ -9,7 +9,9 @@ const readAuth_middleware = require('../../middlewares/readAuth_middleware');
 
 User.findOne = jest.fn();
 Post.findAll = jest.fn();
+Post.create = jest.fn();
 LikePost.findAll = jest.fn();
+
 let req, res, next;
 beforeEach(() => {
     req = httpMocks.createRequest();
@@ -19,7 +21,6 @@ beforeEach(() => {
 
 describe('auth_middleware Test', () => {
     test('정상적인 토큰 주입시 user.findone 실행', async () => {
-        User.findOne = jest.fn();
         auth_middleware(
             {
                 headers: {
@@ -137,6 +138,24 @@ describe('getPosts Test', () => {
     });
 });
 
-describe('postPosts Test',()=>{
-    
-})
+describe('postPosts Test', () => {
+    beforeEach(() => {
+        req.body = newPost;
+        res.locals.user = jest.fn();
+    });
+    test('글작성 모듈불러오기', async () => {
+        await postController.postPosts(req, res);
+        expect(res.statusCode).toEqual(200);
+    });
+    test('글작성 성공', async () => {
+        Post.create.mockReturnValue(newPost);
+        await postController.postPosts(req, res);
+        expect(res._getData()).toStrictEqual({ message: '게시글 추가 성공' });
+        expect(res.statusCode).toEqual(200);
+    });
+    test('글작성 실패', async () => {
+        Post.create.mockReturnValue(Promise.reject());
+        await postController.postPosts(req, res);
+        expect(res._getData()).toStrictEqual({ message: '게시글 추가 실패' });
+    });
+});
